@@ -3,18 +3,18 @@ import os
 import edge_tts
 import streamlit as st
 
-# Sahifa konfiguratsiyasi
+# Sahifa sozlamalari
 st.set_page_config(
-    page_title="Dostoevsky — Full Article Reader",
+    page_title="Dostoevsky — Native Audio Reader",
     page_icon="📚",
     layout="wide",
 )
 
-# Native ovozlar ro'yxati (Microsoft Neural TTS)
+# Native AI ovozlar ro'yxati (Buyuk Britaniya va AQSH)
 VOICES = {
     "Ryan (UK Erkak - Tabiiy Hikoyachi)": "en-GB-RyanNeural",
     "Sonia (UK Ayol - Aniq va Ravon)": "en-GB-SoniaNeural",
-    "Guy (US Erkak - Tabiiy Amerika Talaffuzi)": "en-US-GuyNeural",
+    "Guy (US Erkak - Amerika Talaffuzi)": "en-US-GuyNeural",
     "Jenny (US Ayol - Amerika Yangiliklar Uslubi)": "en-US-JennyNeural",
 }
 
@@ -130,7 +130,7 @@ VOCABULARY = [
     ),
 ]
 
-# Savollar
+# Savollar ro'yxati
 QUESTIONS = [
     (
         "1. Do you believe that people are fundamentally good, or are they"
@@ -159,11 +159,12 @@ QUESTIONS = [
 async def generate_speech_file(
     text: str, voice: str, rate: str, output_path: str
 ):
+    """Edge-TTS orqali audio yaratuvchi asinxron funksiya"""
     communicate = edge_tts.Communicate(text=text, voice=voice, rate=rate)
     await communicate.save(output_path)
 
 
-# Sidebar sozlamalari
+# Yon panel (Sidebar)
 with st.sidebar:
     st.header("🎙️ Audio Sozlamalari")
     chosen_label = st.selectbox("Native Diktor Tanlang:", list(VOICES.keys()))
@@ -180,16 +181,16 @@ with st.sidebar:
     rate_str = f"{rate_percent:+d}%"
 
     st.markdown("---")
-    st.markdown("### 📌 Qo'shimcha O'qish")
+    st.markdown("### 📌 Qo'shimcha Manbalar")
     st.caption("1. Fyodor Dostoevsky — Biography and major works")
     st.caption("2. Treccani: Dostoevsky's life and literary career")
     st.caption("3. SparkNotes: Crime and Punishment")
     st.caption("4. SparkNotes: The Brothers Karamazov")
 
-# Bosh sarlavha va kirish
+# Bosh sahifa
 st.title("📖 Fyodor Dostoevsky: The Most Dangerous Writer Who Ever Lived")
 st.markdown(
-    "Ushbu sahifada maqolaning to'liq matnini o'qishingiz hamda yuqori aniqlikdagi **native AI diktor** ovozida tinglashingiz mumkin."
+    "Matnni o'qishingiz hamda uni yuqori sifatli **native ingliz diktori** ovozida tinglashingiz mumkin."
 )
 
 tab1, tab2, tab3 = st.tabs(
@@ -197,26 +198,28 @@ tab1, tab2, tab3 = st.tabs(
 )
 
 with tab1:
-    st.subheader("Maqolaning to'liq matni")
+    st.subheader("Maqola Matni")
     text_content = st.text_area(
-        "Matn ustida tahrir qilishingiz yoki o'zgarishsiz audio yaratishingiz mumkin:",
+        "Matnni xohlaganingizcha tahrirlashingiz mumkin:",
         value=FULL_ARTICLE_TEXT,
-        height=450,
+        height=400,
     )
 
-    col_btn, col_empty = st.columns([2, 5])
+    col_btn, _ = st.columns([2, 5])
     with col_btn:
         start_tts = st.button(
-            "🔊 To'liq Matnni Audio Qilish", type="primary", use_container_width=True
+            "🔊 Matnni Ovozga Aylantirish",
+            type="primary",
+            use_container_width=True,
         )
 
-    audio_file_name = "full_dostoevsky_article.mp3"
+    audio_file_name = "dostoevsky_article.mp3"
 
     if start_tts:
         if not text_content.strip():
-            st.error("Matn maydoni bo'sh bo'lishi mumkin emas!")
+            st.warning("Iltimos, avval matn kiriting!")
         else:
-            with st.spinner("Native diktor maqolani ovozlashtirmoqda..."):
+            with st.spinner("Native diktor matnni ovozlashtirmoqda..."):
                 try:
                     asyncio.run(
                         generate_speech_file(
@@ -226,14 +229,14 @@ with tab1:
                             output_path=audio_file_name,
                         )
                     )
-                    st.success("Audio muvaffaqiyatli tayyorlandi!")
+                    st.success("Audio tayyor bo'ldi!")
 
                     with open(audio_file_name, "rb") as f:
                         audio_data = f.read()
 
                     st.audio(audio_data, format="audio/mp3")
                     st.download_button(
-                        label="📥 MP3 formatida yuklab olish",
+                        label="📥 MP3 faylni yuklab olish",
                         data=audio_data,
                         file_name="dostoevsky_native_audio.mp3",
                         mime="audio/mp3",
@@ -242,13 +245,13 @@ with tab1:
                     st.error(f"Xatolik yuz berdi: {err}")
 
 with tab2:
-    st.subheader("📚 Advanced Vocabulary & Definitions")
+    st.subheader("📚 Advanced Vocabulary")
     for word, meaning, example in VOCABULARY:
         with st.expander(f"🔹 {word}"):
             st.write(f"**Meaning:** {meaning}")
             st.write(f"**Example:** *{example}*")
 
 with tab3:
-    st.subheader("💬 Muhokama Savollari (Discussion Questions)")
+    st.subheader("💬 Muhokama Savollari")
     for q in QUESTIONS:
         st.info(q)
