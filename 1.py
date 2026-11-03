@@ -1,6 +1,6 @@
 import asyncio
 import os
-import edge_tts
+
 import streamlit as st
 
 # Sahifa sozlamalari
